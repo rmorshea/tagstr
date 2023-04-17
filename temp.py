@@ -9,4 +9,5 @@ def my_func(*args: Thunk | str) -> None:
 
 
 name = "world"
-my_func @ f"Hello, {name}!"
+my_func @ (
+    f"Hello {name}!")
