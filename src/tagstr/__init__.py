@@ -1,4 +1,4 @@
-import tagstr.codec.register
+import tagstr.importer
 from tagstr.decorator import Thunk, tag
 
 __version__ = "0.0.1"

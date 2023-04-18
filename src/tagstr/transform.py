@@ -4,7 +4,7 @@ from ast import literal_eval
 from typing import TextIO
 from io import StringIO
 
-from tagstr.codec.tokenizer import tagstr_tokenize, tagstr_untokenize
+from tagstr.tokenizer import tagstr_tokenize, tagstr_untokenize
 
 
 def decode(input: bytes, errors="strict"):

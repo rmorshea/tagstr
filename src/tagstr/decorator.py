@@ -10,8 +10,8 @@ class tag(Generic[T]):
 
     def __matmul__(self, other: str) -> T:
         raise NotImplementedError(
-            "Usages of tag @ f'...' must be transpiled - "
-            "tagstr encoding may not have been registered."
+            "Usages of `tag @ f'string'` must be transpiled - is there an "
+            "`import tagstr` statement placed at the top of your file?"
         )
 
     def __call__(self, *args: str | Thunk) -> T:
