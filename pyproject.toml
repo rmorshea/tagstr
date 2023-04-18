@@ -4,6 +4,19 @@ readme = "README.md"
 dynamic = ["version"]
 requires-python = ">=3.8"
 description = "Tagged template literals for Python"
+license = "MIT"
+authors = [
+  { name = "Ryan Morshead", email = "ryan.morshead@gmail.com" },
+]
+keywords = [
+  "transpiler",
+  "tagged",
+  "template",
+  "literals",
+]
+
+[project.urls]
+Homepage = "https://github.com/rmorshea/tagstr"
 
 [tool.black]
 force-exclude = 'tests/cases/.*.py'
