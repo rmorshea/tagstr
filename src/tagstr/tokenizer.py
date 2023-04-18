@@ -1,6 +1,5 @@
 from io import StringIO
 import ast
-import traceback
 from tokenize import (
     TokenInfo,
     Untokenizer,
@@ -8,8 +7,6 @@ from tokenize import (
     OP,
     STRING,
     NEWLINE,
-    LPAR,
-    RPAR,
     NL,
     COMMA,
     generate_tokens,
@@ -92,7 +89,7 @@ def tagstr_token_stream_transform(
     for token in stream:
         if token.type == STRING and token.string.startswith("f"):
             break
-        elif token.type == LPAR:
+        elif token.type == OP and token.string == "(":
             depth += 1
         elif token.type in (NEWLINE, NL):
             pass
@@ -102,7 +99,7 @@ def tagstr_token_stream_transform(
 
     if depth != 0:
         for token in stream:
-            if token.type == RPAR:
+            if token.type == OP and token.string == ")":
                 depth -= 1
                 if depth == 0:
                     break
@@ -117,9 +114,9 @@ def rewrite_tagstr_tokens(name: TokenInfo, fstr: TokenInfo) -> list[TokenInfo]:
     end = args[-1]
     return [
         name,
-        move(TokenInfo(LPAR, "(", (0, 1), (0, 2), name.line), name.end),
+        move(TokenInfo(OP, "(", (0, 1), (0, 2), name.line), name.end),
         *args,
-        move(TokenInfo(RPAR, ")", (0, 1), (0, 2), end.line), end.end),
+        move(TokenInfo(OP, ")", (0, 1), (0, 2), end.line), end.end),
     ]
 
 
@@ -166,9 +163,9 @@ def make_thunk_tokens_from_formatted_value(
     getvalue_tokens = (
         (NAME, "lambda"),
         (OP, ":"),
-        (LPAR, "("),
+        (OP, "("),
         *[(t, s) for t, s, *_ in getvalue_expr_tokens],
-        (RPAR, ")"),
+        (OP, ")"),
     )
 
     conv = None if value.conversion == -1 else chr(value.conversion)
@@ -178,7 +175,7 @@ def make_thunk_tokens_from_formatted_value(
     spec_token = (STRING, repr(spec)) if spec is not None else (NAME, "None")
 
     return [
-        (LPAR, "("),
+        (OP, "("),
         *getvalue_tokens,
         (COMMA, ","),
         string_token,
@@ -186,5 +183,5 @@ def make_thunk_tokens_from_formatted_value(
         conv_token,
         (COMMA, ","),
         spec_token,
-        (RPAR, ")"),
+        (OP, ")"),
     ]
