@@ -1,10 +1,12 @@
 from __future__ import annotations
-from typing import Generic, TypeVar, Protocol, Callable, Any
+from typing import Generic, TypeVar, Protocol
+
+from tagstr.utils import Thunk
 
 T = TypeVar("T")
 
 
-class tag(Generic[T]):
+class tagfunc(Generic[T]):
     def __init__(self, func: TagFunc[T]) -> None:
         self.func = func
 
@@ -21,11 +23,3 @@ class tag(Generic[T]):
 class TagFunc(Protocol[T]):
     def __call__(self, *args: Thunk) -> T:
         ...
-
-
-Thunk = tuple[
-    Callable[[], Any],  # getvalue
-    str,  # raw
-    str | None,  # conv
-    str | None,  # formatspec
-]

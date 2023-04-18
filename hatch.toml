@@ -1,0 +1,20 @@
+[version]
+path = "src/tagstr/__init__.py"
+
+[build]
+sources = ["src"]
+
+[build.targets.wheel.force-include]
+# When installed in editable mode Hatch inserts a tagstr.pth file that adds
+# the project files to the system PATH. The file we include needs to come
+# after this alphabetically so that it is loaded after the project is in the
+# PATH. This should likely be fixed in Hatch at some point by simply renaming
+# the file inserted by Hatch to something like "_tagstr.pth".
+# See: https://github.com/pypa/hatch/discussions/827#discussioncomment-5643256
+"src/tagstr.pth" = "~tagstr.pth"
+
+[envs.test]
+dependencies = ["pytest"]
+
+[envs.test.scripts]
+suite = "pytest tests"
