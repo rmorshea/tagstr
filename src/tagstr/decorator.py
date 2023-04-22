@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Generic, Protocol, TypeVar
+from typing import Generic, TypeVar
 
-from tagstr.utils import Thunk
+from tagstr.types import TagFunc, Thunk
 
 T = TypeVar("T")
 
@@ -19,11 +19,3 @@ class tagfunc(Generic[T]):
 
     def __call__(self, *args: str | Thunk) -> T:
         return self.func(*args)
-
-
-T_co = TypeVar("T_co", covariant=True)
-
-
-class TagFunc(Protocol[T_co]):
-    def __call__(self, *args: str | Thunk) -> T_co:
-        ...

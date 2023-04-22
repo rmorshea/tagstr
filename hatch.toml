@@ -18,9 +18,12 @@ checks = [
     "hatch run lint:all",
     "hatch run test:all",
 ]
-
+fixes = [
+    "hatch run lint:fix",
+]
 
 [envs.lint]
+skip-install = true
 dependencies = ["ruff", "black", "mypy"]
 
 [envs.lint.scripts]
@@ -42,6 +45,6 @@ dependencies = ["pytest", "coverage"]
 all = ["pass", "cover"]
 pass = "pytest tests"
 cover = [
-    "coverage run -m pytest tests",
+    "TAGSTR_DISABLE_IMPORT_HOOK=true coverage run -m pytest tests",
     "coverage report",
 ]
