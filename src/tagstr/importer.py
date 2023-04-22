@@ -14,8 +14,8 @@ from tagstr.transform import transform_stream
 
 class TagStrPathHook(PathEntryFinder):
     def __init__(self, path: str) -> None:
-        if not os_path.isfile(path):
-            raise ImportError("Only files are supported")
+        if not os_path.isfile(path) or os_path.splitext(path)[1] != ".py":
+            raise ImportError("Only .py files are supported")
         self.entry_file = path
         self.file_finder = FileFinder(
             os_path.dirname(path), (TagStrSourceFileLoader, [".py"])
@@ -45,6 +45,8 @@ class TagStrMetaFinder(MetaPathFinder):
         if fullname == "__main__":
             loader = TagStrSourceFileLoader(fullname, self.entry_file)
             return ModuleSpec(fullname, loader, is_package=False)
+        elif path is None:
+            return None
 
         for finder in sys.meta_path:
             if finder is not self:
