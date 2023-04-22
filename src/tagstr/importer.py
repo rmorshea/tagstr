@@ -15,8 +15,10 @@ from tagstr.transform import transform_stream
 
 class TagStrPathHook(PathEntryFinder):
     def __init__(self, path: str) -> None:
-        if not os_path.isfile(path) or os_path.splitext(path)[1] != ".py":
+        if not os_path.isfile(path):
             raise ImportError("Only .py files are supported")
+        if not should_transform_file(path):
+            raise ImportError("Tagstr not enabled for this file")
         self.entry_file = path
         self.file_finder = FileFinder(
             os_path.dirname(path), (TagStrSourceFileLoader, [".py"])

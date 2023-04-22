@@ -34,7 +34,7 @@ source = ["src/tagstr"]
 
 [tool.coverage.report]
 # TODO: get 100% coverage
-fail_under = 57
+fail_under = 64
 show_missing = true
 skip_covered = true
 
