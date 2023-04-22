@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import os.path as os_path
+import re
 import sys
 from importlib.abc import MetaPathFinder, PathEntryFinder
 from importlib.machinery import FileFinder, ModuleSpec, PathFinder, SourceFileLoader
+from os import path as os_path
 from token import COMMENT, NAME, NL, STRING
 from tokenize import TokenInfo, detect_encoding, generate_tokens
 from types import CodeType, ModuleType
@@ -84,8 +85,13 @@ def should_transform_file(file: str) -> bool:
 
 def should_transform(stream: TextIO) -> bool:
     for line in iter_token_lines(stream):
-        if not line:
-            continue
+        # check if line is a comment with `# tagstr: on`
+        if len(line) == 1 and line[0].type == COMMENT:
+            match = TAGSTR_COMMENT_PATTERN.match(line[0].string)
+            if match:
+                comment_value = match.group("value")
+                if comment_value.lower() == "on":
+                    return True
 
         # check if line is an `import tagstr` statement
         if (
@@ -110,10 +116,14 @@ def iter_token_lines(stream: TextIO) -> Iterator[list[TokenInfo]]:
     line: list[TokenInfo] = []
     for token in generate_tokens(stream.readline):
         if token.type == NL:
-            yield line
-            line = []
+            if line:  # only yield non-empty lines
+                yield line
+                line = []
         else:
             line.append(token)
+
+
+TAGSTR_COMMENT_PATTERN = re.compile(r"\s*#\s+tagstr\s*:\s*(?P<value>[\w-]+).*$")
 
 
 sys.path_hooks.insert(0, TagStrPathHook)
