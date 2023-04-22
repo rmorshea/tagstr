@@ -1,8 +1,36 @@
-import sys
+from __future__ import annotations
 
-if sys.version_info < (3, 10):
-    from tagstr._py_lt_310 import decode_raw, format_value
-else:
-    from tagstr._py_gte_310 import decode_raw, format_value
+from typing import Iterator
 
-__all__ = ["format_value", "decode_raw"]
+from tagstr.types import Thunk
+
+
+def decode_raw(*args: str | Thunk) -> Iterator[str | Thunk]:
+    """Decode raw strings and thunks."""
+    for arg in args:
+        if isinstance(arg, str):
+            yield arg.encode("utf-8").decode("unicode-escape")
+        else:
+            yield arg
+
+
+def format_value(arg: str | Thunk) -> str:
+    """Format a value from a thunk or a string."""
+    if isinstance(arg, str):
+        return arg
+    elif isinstance(arg, tuple) and len(arg) == 4:
+        getvalue, _, conv, spec = arg
+        value = getvalue()
+        if conv == "r":
+            value = repr(value)
+        elif conv == "s":
+            value = str(value)
+        elif conv == "a":
+            value = ascii(value)
+        elif conv is None:
+            pass
+        else:
+            raise ValueError(f"Bad conversion: {conv!r}")
+        return format(value, spec if spec is not None else "")
+    else:
+        raise ValueError(f"Cannot format {arg!r} - expected a thunk or a string")
