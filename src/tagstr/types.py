@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Protocol, TypeAlias, TypeVar
+from typing import Any, Callable, Protocol, TypeVar, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import TypeAlias
 
 Thunk: TypeAlias = "tuple[Callable[[], Any], str, str | None, str | None]"
 """

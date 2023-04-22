@@ -2,7 +2,7 @@
 name = "tagstr"
 readme = "README.md"
 dynamic = ["version"]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 description = "Tagged template literals for Python"
 license = "MIT"
 authors = [
