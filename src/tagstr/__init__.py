@@ -1,6 +1,5 @@
-import tagstr.importer
-from tagstr.decorator import Thunk, tagfunc
-from tagstr.utils import decode_raw, format_value
+from tagstr.decorator import tagfunc
+from tagstr.utils import Thunk, decode_raw, format_value
 
 __version__ = "0.0.1"
 

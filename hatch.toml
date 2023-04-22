@@ -13,8 +13,35 @@ sources = ["src"]
 # See: https://github.com/pypa/hatch/discussions/827#discussioncomment-5643256
 "src/tagstr.pth" = "~tagstr.pth"
 
+[envs.default.scripts]
+checks = [
+    "hatch run lint:all",
+    "hatch run test:all",
+]
+
+
+[envs.lint]
+dependencies = ["ruff", "black", "mypy"]
+
+[envs.lint.scripts]
+all = ["style", "types"]
+fix = [
+    "black .",
+    "ruff check --fix .",
+]
+style = [
+    "black --check .",
+    "ruff check .",
+]
+types = "mypy --strict src/tagstr"
+
 [envs.test]
-dependencies = ["pytest"]
+dependencies = ["pytest", "coverage"]
 
 [envs.test.scripts]
-suite = "pytest tests"
+all = ["pass", "cover"]
+pass = "pytest tests"
+cover = [
+    "coverage run -m pytest tests",
+    "coverage report",
+]

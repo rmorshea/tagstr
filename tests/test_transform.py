@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import pytest
 from pathlib import Path
 
+import pytest
 from tagstr.transform import transform_string
-from tests.case_utils import parse_cases, Case
+
+from tests.case_utils import Case, parse_cases
 
 case_file = Path(__file__).parent / "cases" / "transform.py"
 

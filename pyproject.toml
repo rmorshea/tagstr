@@ -24,3 +24,15 @@ force-exclude = 'tests/cases/.*.py'
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.coverage.run]
+source = ["src/tagstr"]
+
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+select = ["E", "F", "B", "I"]
+extend-exclude = ["tests/cases/*.py"]

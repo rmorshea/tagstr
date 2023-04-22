@@ -1,6 +1,6 @@
 import traceback
-from typing import TextIO
 from io import StringIO
+from typing import TextIO
 
 from tagstr.tokenizer import tagstr_tokenize, tagstr_untokenize
 

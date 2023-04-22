@@ -1,9 +1,8 @@
-from typing import Callable, Any, Iterator
+from typing import Any, Callable, Iterator
 
 # TODO: thunks likely should have a "tuple-like object with named attributes"
 # (so namedtuples) as seen in the os module. This will enable future expansion.
 # Of course such named attribute support can also be done in the future!
-
 Thunk = tuple[
     Callable[[], Any],  # getvalue
     str,  # raw
@@ -40,3 +39,5 @@ def format_value(arg: str | Thunk) -> str:
                 case _:
                     raise ValueError(f"Bad conversion: {conv!r}")
             return format(value, spec if spec is not None else "")
+        case _:
+            raise ValueError(f"Cannot format {arg!r} - expected a thunk or a string")
