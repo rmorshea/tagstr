@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar
+from typing import Any, Callable, Protocol, TypeVar, Union
 
-if TYPE_CHECKING:
-    from typing import TypeAlias
-
-Thunk: TypeAlias = "tuple[Callable[[], Any], str, str | None, str | None]"
+Thunk = tuple[Callable[[], Any], str, Union[str, None], Union[str, None]]
 """
 A "thunk" is a tuple contianing the following:
 
