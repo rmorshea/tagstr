@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Protocol, TypeVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar
 
 if TYPE_CHECKING:
     from typing import TypeAlias
