@@ -9,17 +9,21 @@ on:
       - main
 
 jobs:
-  checks:
+  python:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11"]
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Use Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: pip install hatch
-      - name: Run hatch
-        run: hatch run checks
+        run: python -m pip install hatch
+      - name: Run Check
+        run: |
+          hatch --version
+          hatch run default:checks
