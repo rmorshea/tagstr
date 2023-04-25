@@ -1,7 +1,10 @@
 # tagstr: on
 
+from tagstr import tagfunc
+
 
 def test_simple_conversion():
+    @tagfunc
     def raw(*args):
         values = []
         for a in args:

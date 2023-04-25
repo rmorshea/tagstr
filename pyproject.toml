@@ -30,13 +30,20 @@ force-exclude = 'tests/cases/.*.py'
 # --- Coverage -------------------------------------------------------------------------
 
 [tool.coverage.run]
-source = ["src/tagstr"]
+include = ["src/tagstr/*"]
 
 [tool.coverage.report]
 # TODO: get 100% coverage
-fail_under = 64
+fail_under = 93
 show_missing = true
 skip_covered = true
+exclude_lines = [
+    # These are regex patterns
+    'pragma: no cover',
+    '\.\.\.',
+    'raise NotImplementedError',
+    'if TYPE_CHECKING[\s:]',
+]
 
 # --- Ruff -----------------------------------------------------------------------------
 
