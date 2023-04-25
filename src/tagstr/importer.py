@@ -1,44 +1,29 @@
 from __future__ import annotations
 
-import re
+import ast
 import sys
-from importlib.abc import MetaPathFinder, PathEntryFinder
-from importlib.machinery import FileFinder, ModuleSpec, PathFinder, SourceFileLoader
+from importlib.abc import MetaPathFinder
+from importlib.machinery import FileFinder, ModuleSpec, SourceFileLoader
 from os import path as os_path
-from token import COMMENT, NAME, NL, STRING
-from tokenize import TokenInfo, detect_encoding, generate_tokens
 from types import CodeType, ModuleType
-from typing import Iterator, Sequence, TextIO
+from typing import Any, Callable, Sequence
 
-from tagstr.transform import transform_stream
+from tagstr.transform import should_transform_file, transform_stream
+
+_ENTRY_FILE: str
 
 
-class TagStrPathHook(PathEntryFinder):
-    def __init__(self, path: str) -> None:
-        if not os_path.isfile(path):
-            raise ImportError("Only .py files are supported")
-        if not should_transform_file(path):
-            raise ImportError("Tagstr not enabled for this file")
-        self.entry_file = path
-        self.file_finder = FileFinder(
-            os_path.dirname(path), (TagStrSourceFileLoader, [".py"])
-        )
-        sys.meta_path.insert(0, TagStrMetaFinder(path))
+def tagstr_path_hook(path: str) -> FileFinder:
+    if not (os_path.isfile(path) and should_transform_file(path)):
+        raise ImportError()
 
-    def invalidate_caches(self) -> None:
-        self.file_finder.invalidate_caches()
+    global _ENTRY_FILE
+    _ENTRY_FILE = path
 
-    def find_spec(
-        self, fullname: str, target: ModuleType | None = None
-    ) -> ModuleSpec | None:
-        return self.file_finder.find_spec(fullname, target)
+    return FileFinder(os_path.dirname(path), (TagStrSourceFileLoader, [".py"]))
 
 
 class TagStrMetaFinder(MetaPathFinder):
-    def __init__(self, entry_path: str = "") -> None:
-        self.entry_file = entry_path
-        self.path_finder = PathFinder()
-
     def find_spec(
         self,
         fullname: str,
@@ -46,10 +31,8 @@ class TagStrMetaFinder(MetaPathFinder):
         target: ModuleType | None = None,
     ) -> ModuleSpec | None:
         if fullname == "__main__":
-            loader = TagStrSourceFileLoader(fullname, self.entry_file)
+            loader = TagStrSourceFileLoader(fullname, _ENTRY_FILE)
             return ModuleSpec(fullname, loader, is_package=False)
-        elif path is None:
-            return None
 
         for finder in sys.meta_path:
             if finder is not self:
@@ -68,64 +51,53 @@ class TagStrMetaFinder(MetaPathFinder):
 class TagStrSourceFileLoader(SourceFileLoader):
     def get_code(self, fullname: str) -> CodeType | None:
         filename = self.get_filename(fullname)
+
+        data: str | ast.Module
         with open(filename, "r", encoding="utf8") as f:
             data = transform_stream(f)
+
+        if _PYTEST_REWRITE:
+            tree = ast.parse(data, filename)
+            _PYTEST_REWRITE(tree, filename, data)
+            data = tree
+
         return compile(data, filename, "exec")
 
 
-def should_transform_file(file: str) -> bool:
-    if not os_path.isfile(file) or os_path.splitext(file)[1] != ".py":
-        return False
-
-    with open(file, "rb") as f:
-        if detect_encoding(f.readline)[0] != "utf-8":
-            return False
-
-    with open(file, "r", encoding="utf-8") as f:
-        return should_transform(f)
+_META_PATH_FINDER = TagStrMetaFinder()
+_PYTEST_REWRITE: Callable[..., None] | None = None
 
 
-def should_transform(stream: TextIO) -> bool:
-    for line in iter_token_lines(stream):
-        # check if line is a comment with `# tagstr: on`
-        if len(line) == 1 and line[0].type == COMMENT:
-            match = TAGSTR_COMMENT_PATTERN.match(line[0].string)
-            if match:
-                comment_value = match.group("value")
-                if comment_value.lower() == "on":
-                    return True
-
-        # check if line is an `import tagstr` statement
-        if (
-            len(line) >= 2
-            and line[0].type == NAME
-            and line[0].string == "import"
-            and line[1].type == NAME
-            and line[1].string == "tagstr"
-        ):
-            return True
-
-        # check if the line of tokens is a string literal or a comment
-        if line[0].type == COMMENT or line[0].type == STRING:
-            continue
-
-        break
-
-    return False
+def register_hooks() -> None:
+    _make_first_in_list(sys.path_hooks, tagstr_path_hook)
+    _make_first_in_list(sys.meta_path, _META_PATH_FINDER)
+    _check_pytest()
 
 
-def iter_token_lines(stream: TextIO) -> Iterator[list[TokenInfo]]:
-    line: list[TokenInfo] = []
-    for token in generate_tokens(stream.readline):
-        if token.type == NL:
-            if line:  # only yield non-empty lines
-                yield line
-                line = []
-        else:
-            line.append(token)
+def _check_pytest() -> None:
+    global _PYTEST_REWRITE
+    try:
+        from _pytest.assertion.rewrite import (  # type: ignore
+            AssertionRewritingHook,
+            rewrite_asserts,
+        )
+    except ImportError:
+        return
+    for finder in sys.meta_path:
+        if isinstance(finder, AssertionRewritingHook):
+            break
+    else:
+        return
+
+    pytest_config = finder.config
+
+    def _PYTEST_REWRITE(node: ast.Module, file: str, source: str) -> None:
+        rewrite_asserts(node, source.encode("utf-8"), file, pytest_config)
 
 
-TAGSTR_COMMENT_PATTERN = re.compile(r"\s*#\s+tagstr\s*:\s*(?P<value>[\w-]+).*$")
-
-
-sys.path_hooks.insert(0, TagStrPathHook)
+def _make_first_in_list(values: list[Any], target: Any) -> None:
+    try:
+        values.remove(target)
+    except ValueError:
+        pass
+    values.insert(0, target)

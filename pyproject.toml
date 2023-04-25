@@ -42,7 +42,7 @@ skip_covered = true
 
 [tool.ruff]
 select = ["E", "F", "B", "I"]
-extend-exclude = ["tests/cases/*.py"]
+extend-exclude = ["*.case.py"]
 
 # --- Hatch ----------------------------------------------------------------------------
 

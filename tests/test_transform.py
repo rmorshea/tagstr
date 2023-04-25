@@ -5,13 +5,13 @@ from pathlib import Path
 import pytest
 from tagstr.transform import transform_string
 
-from tests.case_utils import Case, parse_cases
+from tests.cases import Case, parse_cases
 
 case_file = Path(__file__).parent / "cases" / "transform.py"
 
 
-@pytest.mark.parametrize("case", parse_cases(case_file))
+@pytest.mark.parametrize("case", parse_cases("transform"))
 def test_transform(case: Case) -> None:
-    actual = transform_string(case["actual"])
-    expected = case["expected"]
-    assert actual == expected, case["message"]
+    given = transform_string(case["given"])
+    expect = case["expect"]
+    assert given == expect, case["message"]
