@@ -57,8 +57,6 @@ well as a tuple with information about the interpolated `{name!r}` called a
 ["thunk"][thunk]. In particular, this thunk contains a lambda for lazily retrieving that
 value.
 
-Why is this useful?
-
 # Examples
 
 While the example above isn't especially useful,
